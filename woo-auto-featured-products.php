@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name: Woocommerce Auto-Featured Products
- * Description: This plugin automatically selects 10 products as featured daily and unfeatures the 10 products from the previous day. It displays a list of the most recently featured products.
- * Version: 1.0
+ * Plugin Name: Auto-Featured Products
+ * Description: This plugin automatically features 10 products daily and unfeatures the previous day's featured products. Includes WP-CLI support for manual runs.
+ * Version: 1.1
  * Author: Jouke Siekman
  * Author URI: https://siekman.io
  * Email: info@siekman.io
@@ -20,6 +20,11 @@ class Auto_Featured_Products {
         add_action('auto_featured_products_daily_event', [$this, 'run_daily_featured_products']);
         add_action('admin_menu', [$this, 'admin_menu']);
         add_action('wp_ajax_manual_run_auto_featured', [$this, 'manual_run_auto_featured']);
+
+        // Register WP-CLI command if WP-CLI is available
+        if (defined('WP_CLI') && WP_CLI) {
+            WP_CLI::add_command('auto-featured run', [$this, 'wp_cli_run_auto_featured']);
+        }
     }
 
     public function activation() {
@@ -119,9 +124,9 @@ class Auto_Featured_Products {
         $featured_products = get_option($this->log_option_name, []);
         ?>
         <div class="wrap">
-            <h1>Woocommerce Auto-Featured Products</h1>
+            <h1>Auto-Featured Products</h1>
             <p>Click the button below to run the plugin manually.</p>
-            <button id="run-featured" class="button button-primary">Run manually</button>
+            <button id="run-featured" class="button button-primary">Run Manually</button>
             <div id="run-message" style="margin-top: 10px;"></div>
             <h2>Most Recently Featured Products:</h2>
             <ul>
@@ -137,7 +142,7 @@ class Auto_Featured_Products {
 
         <script type="text/javascript">
             document.getElementById("run-featured").addEventListener("click", function() {
-                document.getElementById("run-message").textContent = "Bezig...";
+                document.getElementById("run-message").textContent = "Running...";
                 fetch(ajaxurl + '?action=manual_run_auto_featured', {
                     method: "POST",
                     credentials: "same-origin",
@@ -153,11 +158,17 @@ class Auto_Featured_Products {
 
     public function manual_run_auto_featured() {
         if (!current_user_can('manage_options')) {
-            wp_send_json_error(['message' => 'Geen toestemming.']);
+            wp_send_json_error(['message' => 'Permission denied.']);
         }
 
         $this->run_daily_featured_products();
-        wp_send_json_success(['message' => 'Handmatige run voltooid.']);
+        wp_send_json_success(['message' => 'Manual run completed.']);
+    }
+
+    public function wp_cli_run_auto_featured($args, $assoc_args) {
+        WP_CLI::log('Running Auto-Featured Products...');
+        $this->run_daily_featured_products();
+        WP_CLI::success('Auto-Featured Products run completed.');
     }
 
     private function log_message($message) {

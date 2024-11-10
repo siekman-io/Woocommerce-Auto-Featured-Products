@@ -6,6 +6,10 @@ The **Auto-Featured Products** plugin for WordPress is designed to streamline an
 - **Automatic Daily Rotation**: Features 10 new products every day and removes the featured status from the previous day’s products.
 - **Manual Control**: Easily trigger a manual rotation with a single click in the admin panel.
 - **Recent Featured Products List**: View a list of recently featured products directly in the dashboard for easy reference.
+- **WP-CLI Support**: Run the plugin manually via WP-CLI with the command:
+  ```bash
+    wp auto-featured run
+  ```
 
 ## Installation
 1. Download the plugin zip file.
